@@ -1,6 +1,6 @@
 # Nexus Example Apps
 
-Example apps for [Nexus](https://developer.pingcode.com/). This repository collects focused demos you can deploy and use it in PingCode.
+Example apps for [Nexus](https://developer.pingcode.com/). This repository collects focused demos you can deploy and try it in PingCode.
 
 > Maintainers: one-way sync to the public mirror is documented in [`docs/sync-public.md`](./docs/sync-public.md).
 
@@ -19,7 +19,3 @@ Example apps for [Nexus](https://developer.pingcode.com/). This repository colle
 | **nexus-project-attachments** | [`nexus-project-attachments`](./nexus-project-attachments) | 项目附件库（Angular Custom UI）on [Project — Component page](https://developer.pingcode.com/reference/resource/extensions/pjm-project-page) + [Storage](https://developer.pingcode.com/reference/functions/storage) NOS + CES |
 | **nexus-wiki-html-preview** | [`nexus-wiki-html-preview`](./nexus-wiki-html-preview) | Wiki HTML Preview（左侧编辑 / 右侧实时渲染，React Custom UI）on [页面 - 文档内容块](https://developer.pingcode.com/reference/resource/extensions/wiki-document-block) |
 | **nexus-workitem-dod-validator** | [`nexus-workitem-dod-validator`](./nexus-workitem-dod-validator) | 工作项 DoD 校验（可配置工时 / 子任务 / 关联缺陷）on [工作项 - 工作流验证](https://developer.pingcode.com/reference/resource/extensions/pjm-workitem-validator) + Angular [Native UI](https://developer.pingcode.com/guide/development/native-ui-with-angular) |
-
-## Public snapshot notes
-
-This public mirror ships example apps **without** `manifest.yaml` `app.id` and **without** `nexus.json` `remoteUrl`. Obtain an app id with `nexus register` and point the CLI at your environment before deploy — see the [Nexus developer docs](https://developer.pingcode.com/) and each app's README / one-click skill.
