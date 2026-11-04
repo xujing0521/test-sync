@@ -1,6 +1,6 @@
 # Nexus Example Apps
 
-Example apps for [Nexus](https://developer.pingcode.com/). This repository collects focused demos you can deploy and use it in PingCode.
+Example apps for [Nexus](https://developer.pingcode.com/). This repository collects focused demos you can deploy and try it in PingCode.
 
 > Maintainers: one-way sync to the public mirror is documented in [`docs/sync-public.md`](./docs/sync-public.md).
 
