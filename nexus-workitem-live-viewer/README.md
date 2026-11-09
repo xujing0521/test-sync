@@ -10,24 +10,15 @@ See [Getting started](https://developer.pingcode.com/guide/started/setup).
 
 ## Quick start
 
-In Cursor, open this directory and ask the agent:
-
-> 一键部署本示例
-
-See [`.agents/skills/use/SKILL.md`](./.agents/skills/use/SKILL.md).
-
-Or manually (see [CLI](https://developer.pingcode.com/reference/cli/overview)).
-
-Custom UI — build the frontend, then deploy ([deploy](https://developer.pingcode.com/reference/cli/deploy) runs against `web/main/dist`):
+See [CLI](https://developer.pingcode.com/reference/cli/overview).
 
 ```bash
+nexus register <app-name>   # first time only
 npm install
-npm run build-web && nexus deploy
+npm run deploy
 nexus distribute -s <your-domain>.pingcode.com -e development
 ```
 
-Local debug: `npm start` (frontend dev server and `nexus serve`), or run `npm run start-web` and `nexus serve` yourself. Port comes from `nexus.json.serve.resources`.
-
-Then install from enterprise admin **App review**.
+Then install from enterprise admin **App review** and open a work item detail page; **Live Viewer** appears in the right property sidebar.
 
 Related commands: [deploy](https://developer.pingcode.com/reference/cli/deploy), [distribute](https://developer.pingcode.com/reference/cli/distribute), [serve](https://developer.pingcode.com/reference/cli/serve).

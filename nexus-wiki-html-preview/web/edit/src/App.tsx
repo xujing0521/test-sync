@@ -1,8 +1,8 @@
 import "@vitejs/plugin-react/preamble";
 import { useEffect, useMemo, useState } from "react";
 import { view } from "@pc-nexus/bridge";
-import { DEFAULT_HTML, readBlockConfig } from "../../shared/config.js";
-import { HtmlPreview } from "../../shared/HtmlPreview.js";
+import { DEFAULT_HTML, readBlockConfig } from "../../shared/config.ts";
+import { toSrcDoc } from "../../shared/htmlPreview.ts";
 
 export default function App() {
   const [html, setHtml] = useState(DEFAULT_HTML);
@@ -85,7 +85,13 @@ export default function App() {
             {loading ? (
               <p className="preview-status">正在加载…</p>
             ) : (
-              <HtmlPreview html={html} className="html-preview-frame" title="HTML 预览" />
+              <iframe
+                key={html}
+                className="html-preview-frame"
+                title="HTML 预览"
+                sandbox="allow-scripts"
+                srcDoc={toSrcDoc(html)}
+              />
             )}
           </div>
         </section>

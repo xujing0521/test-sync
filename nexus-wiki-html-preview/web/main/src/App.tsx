@@ -1,15 +1,43 @@
 import "@vitejs/plugin-react/preamble";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { events, view } from "@pc-nexus/bridge";
 import { NEXUS_EXTENSION_DATA_CONFIG_CHANGED } from "@pc-nexus/models";
-import { readBlockConfig, type HtmlPreviewBlockConfig } from "../../shared/config.js";
-import { HtmlPreview } from "../../shared/HtmlPreview.js";
+import { readBlockConfig } from "../../shared/config.ts";
+import { observeIframeHeight, toSrcDoc } from "../../shared/htmlPreview.ts";
 
 type ViewStatus =
   | { kind: "loading" | "empty" | "error"; message: string }
   | { kind: "ready"; html: string };
 
-function statusFromConfig(config: HtmlPreviewBlockConfig): ViewStatus {
+type HtmlPreviewProps = {
+  html: string;
+  title: string;
+  className: string;
+  autoHeight?: boolean;
+};
+
+function HtmlPreview({ html, title, className, autoHeight = false }: HtmlPreviewProps) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!autoHeight || !iframe) return;
+    return observeIframeHeight(iframe);
+  }, [autoHeight, html]);
+
+  return (
+    <iframe
+      key={html}
+      ref={iframeRef}
+      className={className}
+      title={title}
+      sandbox={autoHeight ? "allow-scripts allow-same-origin" : "allow-scripts"}
+      srcDoc={toSrcDoc(html)}
+    />
+  );
+}
+
+function statusFromConfig(config: ReturnType<typeof readBlockConfig>): ViewStatus {
   if (!config.html.trim()) {
     return {
       kind: "empty",

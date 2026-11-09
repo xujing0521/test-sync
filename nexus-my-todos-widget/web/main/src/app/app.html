@@ -7,17 +7,16 @@
     <div class="todo-config">
       <div class="todo-field">
         <span class="todo-field-label">显示条数<span class="todo-required">*</span></span>
-        <thy-select
+        <thy-native-select
           class="todo-limit"
           thySize="lg"
           [ngModel]="limit()"
           (ngModelChange)="setLimit($event)"
-          (thyExpandStatusChange)="onLimitPanel($event)"
         >
           @for (option of displayLimits; track option) {
-            <thy-option [thyValue]="option" [thyLabelText]="option + '条'"></thy-option>
+            <option [value]="option">{{ option }}条</option>
           }
-        </thy-select>
+        </thy-native-select>
       </div>
       <div class="todo-switch-row">
         <span>显示完成待办</span>
@@ -31,7 +30,7 @@
         type="button"
         [thyLoading]="saving()"
         [thyDisabled]="saving()"
-        (click)="confirm()"
+        (click)="saveConfig()"
       >
         确定
       </button>
