@@ -214,19 +214,11 @@ export async function runDisplay(options: {
   const stop = () => {
     window.clearInterval(pruneTimer);
     pruneTimer = 0;
-    window.removeEventListener('pagehide', onPageHide);
     unsubscribe();
     unsubscribe = () => {};
-    // Extra leave from context teardown — onClose 在 background 不可用，多一次卸载出口。
-    publishLeave({ type: 'leave', userId: options.userId, sessionId: localSessionId });
-  };
-
-  const onPageHide = () => {
-    stop();
   };
 
   options.onDestroy(stop);
-  window.addEventListener('pagehide', onPageHide);
 
   // Self is always viewing this work item — show immediately, then enrich from directory.
   remember({
@@ -258,12 +250,7 @@ export async function runDisplay(options: {
         return;
       }
       if (payload.type === 'leave') {
-        // Drop every remote session for this user (background uuid + any extras).
-        for (const [sessionId, session] of presence) {
-          if (session.userId === payload.userId && !sessionId.startsWith('local:')) {
-            presence.delete(sessionId);
-          }
-        }
+        // One tab per sessionId — closing one tab must not drop the user's other tabs.
         presence.delete(payload.sessionId);
         publishList();
         return;

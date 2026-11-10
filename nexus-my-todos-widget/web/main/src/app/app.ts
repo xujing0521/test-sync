@@ -17,50 +17,22 @@ import { ThyFlexibleText } from "ngx-tethys/flexible-text";
 import { ThyIcon } from "ngx-tethys/icon";
 import { ThyInputDirective } from "ngx-tethys/input";
 import { ThyLoading } from "ngx-tethys/loading";
-import { ThySelect } from "ngx-tethys/select";
-import { ThyOption } from "ngx-tethys/shared";
+import { ThyNativeSelect } from "ngx-tethys/select";
 import { ThySwitch } from "ngx-tethys/switch";
 import { ThyTooltipDirective } from "ngx-tethys/tooltip";
 import {
+  copyTodos,
   displayLimits,
   maxTitle as titleLimit,
   maxTodos as todoLimit,
   readDisplayLimit,
   readShowDone,
+  readTodos,
+  sameTodos,
   type DisplayLimit,
   type TodoItem,
   type TodoListResult,
 } from "./todos";
-
-function copyTodos(list: TodoItem[]): TodoItem[] {
-  return list.map((todo) => ({ ...todo }));
-}
-
-function readTodos(value: unknown): TodoItem[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-  return value.flatMap((item) => {
-    if (item === null || typeof item !== "object") {
-      return [];
-    }
-    const row = item as Record<string, unknown>;
-    if (typeof row["id"] !== "string" || typeof row["title"] !== "string" || !row["title"].trim()) {
-      return [];
-    }
-    return [{ id: row["id"], title: row["title"], done: row["done"] === true }];
-  });
-}
-
-function sameTodos(left: TodoItem[], right: TodoItem[]): boolean {
-  if (left.length !== right.length) {
-    return false;
-  }
-  return left.every(
-    (todo, index) =>
-      todo.id === right[index].id && todo.title === right[index].title && todo.done === right[index].done,
-  );
-}
 
 @Component({
   selector: "app-root",
@@ -73,8 +45,7 @@ function sameTodos(left: TodoItem[], right: TodoItem[]): boolean {
     ThyIcon,
     ThyInputDirective,
     ThyLoading,
-    ThyOption,
-    ThySelect,
+    ThyNativeSelect,
     ThySwitch,
     ThyTooltipDirective,
   ],
@@ -134,7 +105,7 @@ export class App {
     const next = [...this.todos(), { id: crypto.randomUUID(), title, done: false }];
     this.todos.set(next);
     if (!this.editing()) {
-      void this.persist(next);
+      void this.saveTodos(next);
     }
   }
 
@@ -148,7 +119,7 @@ export class App {
     }
     this.todos.set(next);
     if (!this.editing()) {
-      void this.persist(next);
+      void this.saveTodos(next);
     }
   }
 
@@ -159,7 +130,7 @@ export class App {
     const next = this.todos().filter((todo) => todo.id !== id);
     this.todos.set(next);
     if (!this.editing()) {
-      void this.persist(next);
+      void this.saveTodos(next);
     }
   }
 
@@ -167,26 +138,7 @@ export class App {
     this.limit.set(readDisplayLimit(value));
   }
 
-  protected onLimitPanel(open: boolean) {
-    if (open) {
-      this.fitLimitPanel(0);
-    }
-  }
-
-  private fitLimitPanel(attempt: number) {
-    const pane = document.querySelector(".cdk-overlay-pane");
-    const options = pane?.querySelector(".thy-select-dropdown-options");
-    if (!(pane instanceof HTMLElement) || !(options instanceof HTMLElement)) {
-      if (attempt < 5) {
-        setTimeout(() => this.fitLimitPanel(attempt + 1), 16);
-      }
-      return;
-    }
-    const room = Math.floor(window.innerHeight - pane.getBoundingClientRect().top - 8);
-    options.style.maxHeight = `${Math.max(room, 40)}px`;
-  }
-
-  protected async confirm() {
+  protected async saveConfig() {
     if (this.saving() || !this.editing()) {
       return;
     }
@@ -203,26 +155,25 @@ export class App {
     }
   }
 
-  private async persist(next: TodoItem[]) {
+  private async saveTodos(next: TodoItem[]) {
     const previous = copyTodos(this.saved());
     if (!this.widgetId) {
-      this.todos.set(previous);
+      this.applyTodos(previous);
       this.fail(new Error("没能保存"));
       return;
     }
     const saved = await this.run(() => invoke<{ todos: TodoItem[] }, TodoItem[]>("save", { todos: next }));
     if (!saved) {
-      this.todos.set(previous);
+      this.applyTodos(previous);
       return;
     }
-    this.saved.set(copyTodos(saved));
-    this.todos.set(copyTodos(saved));
+    this.applyTodos(saved);
   }
 
-  private remember(list: TodoItem[]) {
+  private applyTodos(list: TodoItem[]) {
     const next = copyTodos(list);
-    this.saved.set(copyTodos(next));
-    this.todos.set(next);
+    this.saved.set(next);
+    this.todos.set(copyTodos(next));
   }
 
   private async load() {
@@ -241,7 +192,7 @@ export class App {
       this.limit.set(readDisplayLimit(data?.config?.limit));
       this.showDone.set(readShowDone(data?.config?.show_done));
       const stored = await invoke<void, TodoListResult>("get-all");
-      this.remember(stored.saved ? readTodos(stored.todos) : []);
+      this.applyTodos(stored.saved ? readTodos(stored.todos) : []);
     } catch (err) {
       this.fail(err);
     } finally {

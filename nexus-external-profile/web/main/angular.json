@@ -26,7 +26,7 @@
             "inlineStyleLanguage": "scss",
             "baseHref": "./",
             "styles": [
-              "node_modules/ngx-tethys/styles/index.scss",
+              "./node_modules/ngx-tethys/styles/index.scss",
               "src/styles.scss"
             ],
             "assets": [

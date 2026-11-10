@@ -16,11 +16,9 @@
     "@angular/core": "^22.1.0",
     "@angular/forms": "^22.1.0",
     "@angular/platform-browser": "^22.1.0",
-    "@date-fns/tz": "1.2.0",
     "@pc-nexus/bridge": "^0.8.0",
     "@tethys/cdk": "^22.0.6",
     "@tethys/icons": "^1.4.23",
-    "date-fns": "4.1.0",
     "ngx-tethys": "^22.0.6",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"

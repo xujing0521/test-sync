@@ -7,18 +7,14 @@
   "engines": {
     "node": ">=24.0.0"
   },
-  "workspaces": [
-    "web/main"
-  ],
   "scripts": {
-    "postinstall": "node ./scripts/link-web-modules.mjs",
-    "build-web": "npm run build -w nexus-external-profile-web-main",
-    "start-web": "npm run start -w nexus-external-profile-web-main",
-    "build": "tsc && npm run build-web",
+    "build-web": "cd web/main && npm run build",
+    "start-web": "cd web/main && npm run start",
     "serve": "nexus serve --environment development",
     "start": "concurrently \"npm run start-web\" \"npm run serve\"",
     "deploy-only": "nexus deploy",
-    "deploy": "npm run build-web && nexus deploy"
+    "deploy": "npm run build-web && nexus deploy",
+    "postinstall": "cd web/main && npm install"
   },
   "dependencies": {
     "@pc-nexus/core": "^0.8.0",

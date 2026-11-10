@@ -16,12 +16,12 @@ interface GithubProfile {
 }
 
 type GithubLookup =
-  | { status: "ready"; username: string; profile: GithubProfile; bound: boolean }
+  | { status: "unbound" }
+  | { status: "ready"; profile: GithubProfile }
   | { status: "not_found"; username: string }
   | { status: "rate_limited"; username: string };
 
 type LoadState =
-  | { status: "idle" }
   | { status: "loading" }
   | { status: "error"; message: string }
   | GithubLookup;
@@ -41,18 +41,19 @@ function errorMessage(error: unknown): string {
 })
 export class App {
   protected readonly draft = signal("");
-  protected readonly displayUsername = signal("");
-  protected readonly bound = signal(false);
   protected readonly profile = signal<GithubProfile | null>(null);
   protected readonly state = signal<LoadState>({ status: "loading" });
 
   protected readonly loading = computed(() => this.state().status === "loading");
-  protected readonly actionLabel = computed(() => (this.bound() ? "重新绑定" : "绑定"));
-  protected readonly fieldLabel = "绑定 github 账号";
+  protected readonly binding = signal(false);
+  protected readonly actionLabel = computed(() => (this.profile() ? "重新绑定" : "绑定"));
   protected readonly statusMessage = computed(() => {
     const current = this.state();
     if (current.status === "loading") {
-      return { kind: "info" as const, text: "正在处理…" };
+      return { kind: "info" as const, text: "正在读取绑定信息…" };
+    }
+    if (current.status === "unbound") {
+      return { kind: "info" as const, text: "请先绑定 GitHub 账号以查看个人资料。" };
     }
     if (current.status === "error") {
       return { kind: "error" as const, text: current.message };
@@ -72,7 +73,9 @@ export class App {
 
   protected onSubmit(event: Event): void {
     event.preventDefault();
-    void this.bindUsername(this.draft());
+    if (!this.loading() && !this.binding()) {
+      void this.bindUsername(this.draft());
+    }
   }
 
   protected onOpenProfile(event: Event, url: string): void {
@@ -81,42 +84,38 @@ export class App {
   }
 
   private async loadBinding(): Promise<void> {
-    this.state.set({ status: "loading" });
     try {
+      // invoke 的调用名必须与后端 resolver.define 注册的名称一致。
       const next = await invoke<Record<string, never>, GithubLookup>("getGithubUser", {});
-      this.applyLookup(next, { clearDraft: true });
+      this.applyLookup(next);
     } catch (error: unknown) {
       this.state.set({ status: "error", message: errorMessage(error) });
     }
   }
 
   private async bindUsername(name: string): Promise<void> {
-    const trimmed = name.trim() || this.displayUsername();
+    const trimmed = name.trim();
     if (!trimmed) {
       this.state.set({ status: "error", message: "请输入 GitHub 用户名" });
       return;
     }
-    this.state.set({ status: "loading" });
+    this.binding.set(true);
     try {
       const next = await invoke<{ username: string }, GithubLookup>("getGithubUser", {
         username: trimmed,
       });
-      this.applyLookup(next, { clearDraft: next.status === "ready" });
+      this.applyLookup(next);
     } catch (error: unknown) {
       this.state.set({ status: "error", message: errorMessage(error) });
+    } finally {
+      this.binding.set(false);
     }
   }
 
-  private applyLookup(next: GithubLookup, options: { clearDraft: boolean }): void {
+  private applyLookup(next: GithubLookup): void {
     if (next.status === "ready") {
-      this.displayUsername.set(next.username);
-      this.bound.set(next.bound);
       this.profile.set(next.profile);
-      if (options.clearDraft) {
-        this.draft.set("");
-      }
-      this.state.set(next);
-      return;
+      this.draft.set("");
     }
 
     this.state.set(next);
