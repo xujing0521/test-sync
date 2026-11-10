@@ -81,6 +81,7 @@ export async function fetchPublicUser(username: string): Promise<GithubUser | "n
     };
   }
 
+  // 访问 api.github.com 需要在 manifest 的 permissions.external.fetch.backend 中放行该域名。
   const response = await fetch.request(`https://api.github.com/users/${encodeURIComponent(username)}`, {
     method: "GET",
     headers: {

@@ -3,7 +3,8 @@ import { kvs } from "@pc-nexus/storage";
 import { fetchPublicUser, toProfile, type GithubProfile } from "./github.js";
 
 export type GithubLookup =
-  | { status: "ready"; username: string; profile: GithubProfile; bound: boolean }
+  | { status: "unbound" }
+  | { status: "ready"; profile: GithubProfile }
   | { status: "not_found"; username: string }
   | { status: "rate_limited"; username: string };
 
@@ -15,8 +16,6 @@ interface StoredUsername {
   username: string;
 }
 
-/** Demo fallback when the user has never bound a username (not written to KVS). */
-const EXAMPLE_USERNAME = "octocat";
 const USERNAME = /^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/;
 
 const resolver = new Resolver();
@@ -44,18 +43,15 @@ async function lookupUsername(username: string): Promise<GithubLookup> {
     return { status: "rate_limited", username };
   }
   const profile = toProfile(user);
-  return { status: "ready", username: profile.login, profile, bound: false };
+  return { status: "ready", profile };
 }
 
-/** Saved binding if any, otherwise the octocat demo profile (not persisted). */
 async function resolveCurrent(userId: string): Promise<GithubLookup> {
   const saved = userId ? await readSavedUsername(userId) : "";
-  const username = saved || EXAMPLE_USERNAME;
-  const result = await lookupUsername(username);
-  if (result.status !== "ready") {
-    return result;
+  if (!saved) {
+    return { status: "unbound" };
   }
-  return { ...result, bound: Boolean(saved) };
+  return lookupUsername(saved);
 }
 
 resolver.define<LookupPayload, GithubLookup>("getGithubUser", async (context, payload) => {
@@ -64,9 +60,14 @@ resolver.define<LookupPayload, GithubLookup>("getGithubUser", async (context, pa
     throw new Error("请输入有效的 GitHub 用户名");
   }
 
+  // 应用级 KVS 使用宿主提供的用户 ID 区分不同用户的绑定。
   const userId = context.user?.id?.trim() ?? "";
   if (!requested) {
     return resolveCurrent(userId);
+  }
+
+  if (!userId) {
+    throw new Error("无法识别当前 PingCode 用户");
   }
 
   // Explicit username: bind or rebind after a successful lookup.
@@ -74,10 +75,8 @@ resolver.define<LookupPayload, GithubLookup>("getGithubUser", async (context, pa
   if (result.status !== "ready") {
     return result;
   }
-  if (userId) {
-    await saveUsername(userId, result.profile.login);
-  }
-  return { ...result, bound: true };
+  await saveUsername(userId, result.profile.login);
+  return result;
 });
 
 export { resolver };

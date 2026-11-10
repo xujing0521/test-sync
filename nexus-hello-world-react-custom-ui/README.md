@@ -8,20 +8,17 @@ Environment, account, and CLI setup: [Getting started](https://developer.pingcod
 
 ## Quick start
 
-In Cursor, open this directory and ask the agent:
+See [CLI](https://developer.pingcode.com/reference/cli/overview).
 
-> 一键部署本示例
-
-See [`.agents/skills/use/SKILL.md`](./.agents/skills/use/SKILL.md).
-
-Or manually (see [CLI](https://developer.pingcode.com/reference/cli/overview)):
+Run these commands from this example directory.
 
 ```bash
+nexus register <app-name>   # first time only
 npm install
-nexus deploy
+npm run deploy
 nexus distribute -s <your-domain>.pingcode.com -e development
 ```
 
-Then install from enterprise admin **App review**. Local debug: run `nexus serve` from this directory.
+Then install from enterprise admin **App review** and open **Hello World** on a project's component page (route `hello-world`). The page should show `Hello, Nexus` from the `greeting` resolver.
 
 Related commands: [deploy](https://developer.pingcode.com/reference/cli/deploy), [distribute](https://developer.pingcode.com/reference/cli/distribute), [serve](https://developer.pingcode.com/reference/cli/serve).

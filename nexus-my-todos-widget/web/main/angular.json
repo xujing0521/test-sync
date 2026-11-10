@@ -58,10 +58,7 @@
                 "output": "/assets/widget-icons"
               }
             ],
-            "styles": [
-              "node_modules/ngx-tethys/styles/index.scss",
-              "src/styles.scss"
-            ],
+            "styles": ["./node_modules/ngx-tethys/styles/index.scss", "src/styles.scss"],
             "outputPath": {
               "base": "./dist",
               "browser": "",

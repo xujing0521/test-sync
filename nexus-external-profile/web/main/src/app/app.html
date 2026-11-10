@@ -1,28 +1,29 @@
 <main class="profile">
   <form class="profile-bind" (submit)="onSubmit($event)">
     <div class="profile-field-head">
-      <span class="profile-label">{{ fieldLabel }}</span>
+      <label class="profile-label" for="github-username">GitHub 用户名</label>
     </div>
     <div class="profile-bind-row">
       <input
         thyInput
         thySize="lg"
         class="profile-input"
+        id="github-username"
         name="github-username"
         [ngModel]="draft()"
         (ngModelChange)="draft.set($event)"
         placeholder="输入 GitHub 用户名"
         autocomplete="off"
         spellcheck="false"
-        [disabled]="loading()"
+        [disabled]="loading() || binding()"
       />
-      <button thyButton="primary" thySize="lg" type="submit" [disabled]="loading()">
+      <button thyButton="primary" thySize="lg" type="submit" [thyDisabled]="loading() || binding()" [thyLoading]="binding()">
         {{ actionLabel() }}
       </button>
     </div>
   </form>
 
-  @if (statusMessage(); as status) {
+  @if (!binding() && statusMessage(); as status) {
     <p
       class="profile-status"
       [class.profile-status-error]="status.kind === 'error'"
